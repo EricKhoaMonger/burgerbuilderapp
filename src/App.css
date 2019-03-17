@@ -1,0 +1,8 @@
+.SwitchWrapper {
+  position: relative;
+}
+ 
+.SwitchWrapper > div {
+  position: absolute;
+  width: 100%;
+}
