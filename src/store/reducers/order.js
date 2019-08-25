@@ -1,32 +1,32 @@
-import * as actionTypes from "../actions/actionTypes";
-import { updateObj } from "../../sharedFn/utilities";
+import * as actionTypes from '../actions/actionTypes';
+import { updateObj } from '../../sharedFn/utilities';
 
 const initialState = {
   orders: [],
   loading: false,
   purchased: false,
-  error: null
+  error: null,
 };
 
 const purchaseOrder = (state, action) => {
   const newOrder = {
     ...action.orderData,
-    id: action.orderId
+    id: action.orderId,
   };
   return updateObj(state, {
     loading: false,
     purchased: true,
-    orders: state.orders.concat(newOrder)
+    orders: state.orders.concat(newOrder),
   });
 };
 
 const cancelOrder = (state, action) => {
-  const updatedOrders = state.orders.filter(o => o.id !== action.orderId)
+  const updatedOrders = state.orders.filter(o => o.id !== action.orderId);
   return updateObj(state, {
     orders: updatedOrders,
-    loading: false
-  })
-}
+    loading: false,
+  });
+};
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -49,7 +49,7 @@ const reducer = (state = initialState, action) => {
       return updateObj(state, { loading: true });
 
     case actionTypes.CANCEL_ORDER_SUCCESS:
-      return cancelOrder(state, action)
+      return cancelOrder(state, action);
 
     case actionTypes.CANCEL_ORDER_FAIL:
       return updateObj(state, { loading: false });
@@ -57,7 +57,7 @@ const reducer = (state = initialState, action) => {
     case actionTypes.FETCH_ORDERS_SUCCESS:
       return updateObj(state, {
         orders: action.orders,
-        loading: false
+        loading: false,
       });
 
     case actionTypes.FETCH_ORDERS_FAIL:

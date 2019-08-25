@@ -1,25 +1,29 @@
-import React, { Component } from "react";
-import axios from "../../axios-orders";
-import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
-import { connect } from "react-redux";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import * as actions from "../../store/actions/index";
-import Order from "./Order/Order";
-import Spinner from "../../components/UI/Spinner/Spinner";
-import classes from "./Orders.css";
+import axios from '../../axios-orders';
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
+
+import * as actions from '../../store/actions/index';
+import Order from './Order/Order';
+import Spinner from '../../components/UI/Spinner/Spinner';
+import classes from './Orders.css';
 
 class Orders extends Component {
   componentDidMount() {
-    this.props.onFetchingOrders(this.props.token, this.props.userId)
+    const { onFetchingOrders, token, userId } = this.props;
+    onFetchingOrders(token, userId);
   }
 
   render() {
+    const { loading, orders: fetchedOrders, token, onCancelingOrder } = this.props;
     let orders = [];
-    if (this.props.loading) {
+    if (loading) {
       orders = <Spinner />;
     } else {
-      orders = this.props.orders.length ? (
-        this.props.orders.map(o => {
+      orders = fetchedOrders.length ? (
+        fetchedOrders.map(o => {
           return (
             <Order
               key={o.id}
@@ -30,8 +34,8 @@ class Orders extends Component {
               meat={o.ingredients.meat}
               price={o.price}
               id={o.id}
-              token={this.props.token}
-              cancelOrder={this.props.onCancelingOrder}
+              token={token}
+              cancelOrder={onCancelingOrder}
             />
           );
         })
@@ -43,24 +47,33 @@ class Orders extends Component {
   }
 }
 
+Orders.propTypes = {
+  onCancelingOrder: PropTypes.func.isRequired,
+  onFetchingOrders: PropTypes.func.isRequired,
+  token: PropTypes.string.isRequired,
+  userId: PropTypes.string.isRequired,
+  loading: PropTypes.bool.isRequired,
+  orders: PropTypes.arrayOf({}).isRequired,
+};
+
 const mapStateToProps = state => {
   return {
     orders: state.order.orders,
     loading: state.order.loading,
     error: state.order.error,
     token: state.auth.token,
-    userId: state.auth.userId
+    userId: state.auth.userId,
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     onFetchingOrders: (token, userId) => dispatch(actions.fetchOrders(token, userId)),
-    onCancelingOrder: (token, orderId) => dispatch(actions.cancelOrder(token, orderId))
+    onCancelingOrder: (token, orderId) => dispatch(actions.cancelOrder(token, orderId)),
   };
 };
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps,
+  mapDispatchToProps
 )(withErrorHandler(Orders, axios));

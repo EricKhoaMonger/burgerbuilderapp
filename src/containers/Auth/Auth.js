@@ -1,63 +1,78 @@
-import React, { Component } from "react";
-import * as actions from "../../store/actions/auth";
-import { connect } from "react-redux";
-import { Redirect } from "react-router-dom";
-import { checkValidity, updateObj } from "../../sharedFn/utilities";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { Redirect } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-import classes from "./Auth.css";
-import FormInput from "../../components/FormInput/Forminput";
-import Button from "../../components/UI/Button/Button";
-import Spinner from "../../components/UI/Spinner/Spinner";
-import Logo from "../../components/UI/Logo/Logo";
+import * as actions from '../../store/actions/auth';
+import { checkValidity, updateObj } from '../../sharedFn/utilities';
 
-export class Auth extends Component {
-  state = {
-    controls: {
-      email: {
-        name: "email",
-        value: "",
-        placeholder: "Enter Your Email",
-        type: "text",
-        inputType: "input",
-        valid: false,
-        validation: {
-          required: true,
-          pattern: /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/
+import classes from './Auth.css';
+import FormInput from '../../components/FormInput/Forminput';
+import Button from '../../components/UI/Button/Button';
+import Spinner from '../../components/UI/Spinner/Spinner';
+import Logo from '../../components/UI/Logo/Logo';
+
+class Auth extends Component {
+  constructor() {
+    super();
+    this.state = {
+      controls: {
+        email: {
+          name: 'email',
+          value: '',
+          placeholder: 'Enter Your Email',
+          type: 'text',
+          inputType: 'input',
+          valid: false,
+          validation: {
+            required: true,
+            pattern: /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/,
+          },
+          touched: false,
         },
-        touched: false
+        password: {
+          name: 'password',
+          value: '',
+          placeholder: 'Password',
+          type: 'password',
+          inputType: 'input',
+          valid: false,
+          validation: {
+            required: true,
+            length: {
+              minLength: 6,
+              maxLength: 50,
+            },
+          },
+          touched: false,
+        },
       },
-      password: {
-        name: "password",
-        value: "",
-        placeholder: "Password",
-        type: "password",
-        inputType: "input",
-        valid: false,
-        validation: {
-          required: true,
-          length: {
-            minLength: 6,
-            maxLength: 50
-          }
-        },
-        touched: false
-      }
-    },
-    isSignUp: false
-  };
+      isSignUp: false,
+    };
+  }
+
+  componentDidMount() {
+    const { building, authRedirectPath, onSetAuthRedirectPath } = this.props;
+    if (!building && !authRedirectPath !== '/') {
+      onSetAuthRedirectPath();
+    }
+  }
+
+  componentWillUnmount() {
+    const { onClearError } = this.props;
+    onClearError();
+  }
 
   inputChangedHandler = (e, controlName) => {
-    const updatedControl = updateObj(this.state.controls[controlName], {
+    const { controls } = this.state;
+    const updatedControl = updateObj(controls[controlName], {
       value: e.target.value,
-      valid: checkValidity(
-        e.target.value,
-        this.state.controls[controlName].validation
-      ),
-      touched: true
+      valid: checkValidity(e.target.value, controls[controlName].validation),
+      touched: true,
     });
 
-    const updatedControls = updateObj(this.state.controls, {
-      [controlName]: updatedControl
+    const updatedControls = updateObj(controls, {
+      [controlName]: updatedControl,
     });
 
     this.setState({ controls: updatedControls });
@@ -65,43 +80,30 @@ export class Auth extends Component {
 
   onSubmitHanlder = e => {
     e.preventDefault();
+    const { onAuth } = this.props;
+    const { controls, isSignUp } = this.state;
 
-    this.props.onAuth(
-      this.state.controls.email.value,
-      this.state.controls.password.value,
-      this.state.isSignUp
-    );
+    onAuth(controls.email.value, controls.password.value, isSignUp);
   };
 
   onSwithAuthHanlder = () => {
     this.setState(prevState => {
       return {
-        isSignUp: !prevState.isSignUp
+        isSignUp: !prevState.isSignUp,
       };
     });
   };
 
-  componentDidMount() {
-    if (!this.props.building && !this.props.authRedirectPath !== "/") {
-      this.props.onSetAuthRedirectPath();
-    }
-  }
-
-  componentWillUnmount() {
-    this.props.onClearError();
-  }
-
   render() {
-    let formArr = [];
-    for (const key in this.state.controls) {
-      const formEl = this.state.controls[key];
-      formArr.push(formEl);
-    }
+    const { controls, isSignUp } = this.state;
+    const { error, loading, isAuthenticated, authRedirectPath } = this.props;
+    const formArr = Object.keys(controls).map(key => controls[key]);
 
     let form = null;
     form = formArr.map(i => {
       return (
         <FormInput
+          // eslint-disable-next-line react/jsx-props-no-spreading
           {...i}
           key={i.name}
           changed={e => this.inputChangedHandler(e, i.name)}
@@ -111,34 +113,34 @@ export class Auth extends Component {
       );
     });
 
-    if (this.props.loading) {
+    if (loading) {
       form = <Spinner />;
     }
 
     let errorMsg = null;
-    let classNameArr = [classes.AuthForm];
+    const classNameArr = [classes.AuthForm];
 
-    if (this.props.error) {
-      switch (this.props.error.message) {
-        case "INVALID_EMAIL":
-          errorMsg = <p className="error-msg">Email is invalid</p>
+    if (error) {
+      switch (error.message) {
+        case 'INVALID_EMAIL':
+          errorMsg = <p className="error-msg">Email is invalid</p>;
           break;
 
-        case "INVALID_PASSWORD":
-          errorMsg = <p className="error-msg">Password is not correct</p>
+        case 'INVALID_PASSWORD':
+          errorMsg = <p className="error-msg">Password is not correct</p>;
           break;
 
-        case "EMAIL_NOT_FOUND":
-          errorMsg = <p className="error-msg">Email is not register</p>
+        case 'EMAIL_NOT_FOUND':
+          errorMsg = <p className="error-msg">Email is not register</p>;
           break;
 
-        case "EMAIL_EXISTS":
-          errorMsg = <p className="error-msg">Email exists. Please choose another email</p>
+        case 'EMAIL_EXISTS':
+          errorMsg = <p className="error-msg">Email exists. Please choose another email</p>;
           break;
 
-        case "SIGN_IN_NEEDED":
-          errorMsg = <p className="error-msg">Please sign in to purchase burgers</p>
-          classNameArr.push(classes.AuthRedirect)
+        case 'SIGN_IN_NEEDED':
+          errorMsg = <p className="error-msg">Please sign in to purchase burgers</p>;
+          classNameArr.push(classes.AuthRedirect);
           break;
 
         default:
@@ -147,18 +149,16 @@ export class Auth extends Component {
     }
 
     const btnStyle = {
-      display: "flex",
-      marginLeft: "auto",
-      height: "1.6rem"
+      display: 'flex',
+      marginLeft: 'auto',
+      height: '1.6rem',
     };
 
-    const btnLabel = this.state.isSignUp
-      ? "Swith to Sign In"
-      : "Swith to Sign Up";
+    const btnLabel = isSignUp ? 'Swith to Sign In' : 'Swith to Sign Up';
 
     let authRedirect = null;
-    if (this.props.isAuthenticated) {
-      authRedirect = <Redirect to={this.props.authRedirectPath} />;
+    if (isAuthenticated) {
+      authRedirect = <Redirect to={authRedirectPath} />;
     }
 
     return (
@@ -173,23 +173,28 @@ export class Auth extends Component {
           <Button label="Submit" type="Success" style={btnStyle} />
         </form>
 
-        <Button
-          label={btnLabel}
-          type="Danger"
-          style={btnStyle}
-          clicked={this.onSwithAuthHanlder}
-        />
+        <Button label={btnLabel} type="Danger" style={btnStyle} clicked={this.onSwithAuthHanlder} />
       </div>
     );
   }
 }
 
+Auth.propTypes = {
+  building: PropTypes.bool.isRequired,
+  authRedirectPath: PropTypes.string.isRequired,
+  onSetAuthRedirectPath: PropTypes.func.isRequired,
+  onClearError: PropTypes.func.isRequired,
+  onAuth: PropTypes.func.isRequired,
+  error: PropTypes.shape.isRequired,
+  loading: PropTypes.bool.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
+};
+
 const mapDispatchToProps = dispatch => {
   return {
-    onAuth: (email, password, isSignUp) =>
-      dispatch(actions.auth(email, password, isSignUp)),
-    onSetAuthRedirectPath: () => dispatch(actions.setAuthRedirectPath("/")),
-    onClearError: () => dispatch(actions.clearError())
+    onAuth: (email, password, isSignUp) => dispatch(actions.auth(email, password, isSignUp)),
+    onSetAuthRedirectPath: () => dispatch(actions.setAuthRedirectPath('/')),
+    onClearError: () => dispatch(actions.clearError()),
   };
 };
 
@@ -199,7 +204,7 @@ const mapStateToProps = state => {
     error: state.auth.error,
     isAuthenticated: state.auth.token !== null,
     building: state.burgerBuilder.building,
-    authRedirectPath: state.auth.authRedirectPath
+    authRedirectPath: state.auth.authRedirectPath,
   };
 };
 

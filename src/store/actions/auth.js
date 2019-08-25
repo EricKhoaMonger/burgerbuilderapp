@@ -1,9 +1,10 @@
-import * as actionTypes from "./actionTypes";
-import axios from "axios";
+/* eslint-disable max-len */
+import axios from 'axios';
+import * as actionTypes from './actionTypes';
 
 export const authStart = () => {
   return {
-    type: actionTypes.AUTH_START
+    type: actionTypes.AUTH_START,
   };
 };
 
@@ -11,53 +12,21 @@ export const authSuccess = (localId, idToken) => {
   return {
     type: actionTypes.AUTH_SUCCESS,
     userId: localId,
-    idToken
+    idToken,
   };
 };
 
 export const authFail = error => {
   return {
     type: actionTypes.AUTH_FAIL,
-    error
-  };
-};
-
-export const auth = (email, password, isSignup) => {
-  let baseURL = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyAtkavyF3oI4_2ireKJ3TWNTmmOIlB4B5o`;
-  return async dispatch => {
-    dispatch(authStart());
-    const authData = {
-      email,
-      password,
-      returnSecureToken: true
-    };
-
-    if (isSignup) {
-      baseURL = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyAtkavyF3oI4_2ireKJ3TWNTmmOIlB4B5o`;
-    }
-
-    try {
-      const res = await axios.post(baseURL, authData);
-      if (await res && res.status === 200) {
-        const expirationDate = new Date(
-          new Date().getTime() + res.data.expiresIn * 1000
-        );
-        localStorage.setItem("token", res.data.idToken);
-        localStorage.setItem("userId", res.data.localId);
-        localStorage.setItem("expirationDate", expirationDate);
-        await dispatch(authSuccess(res.data.localId, res.data.idToken));
-        await dispatch(authLogout(res.data.expiresIn));
-      }
-    } catch (error) {
-      dispatch(authFail(error.response.data.error));
-    }
+    error,
   };
 };
 
 export const logout = () => {
   localStorage.clear();
   return {
-    type: actionTypes.AUTH_LOGOUT
+    type: actionTypes.AUTH_LOGOUT,
   };
 };
 
@@ -69,24 +38,60 @@ export const authLogout = expirationTime => {
   };
 };
 
+export const auth = (email, password, isSignup) => {
+  let baseURL = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyAtkavyF3oI4_2ireKJ3TWNTmmOIlB4B5o`;
+  return async dispatch => {
+    dispatch(authStart());
+    const authData = {
+      email,
+      password,
+      returnSecureToken: true,
+    };
+
+    if (isSignup) {
+      baseURL = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyAtkavyF3oI4_2ireKJ3TWNTmmOIlB4B5o`;
+    }
+
+    try {
+      const res = await axios.post(baseURL, authData);
+      if ((await res) && res.status === 200) {
+        const expirationDate = new Date(new Date().getTime() + res.data.expiresIn * 1000);
+        localStorage.setItem('token', res.data.idToken);
+        localStorage.setItem('userId', res.data.localId);
+        localStorage.setItem('expirationDate', expirationDate);
+        await dispatch(authSuccess(res.data.localId, res.data.idToken));
+        await dispatch(authLogout(res.data.expiresIn));
+      }
+    } catch (error) {
+      dispatch(authFail(error.response.data.error));
+    }
+  };
+};
+
 export const setAuthRedirectPath = path => {
   return {
     type: actionTypes.SET_AUTH_REDIRECT_PATH,
-    path
+    path,
   };
 };
 
 export const checkAuthState = () => {
   return dispatch => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
 
-    if (!token) return dispatch(logout());
+    if (!token) {
+      dispatch(logout());
+      return;
+    }
 
-    const expirationDate = new Date(localStorage.getItem("expirationDate"));
+    const expirationDate = new Date(localStorage.getItem('expirationDate'));
 
-    if (expirationDate <= new Date()) return dispatch(logout());
+    if (expirationDate <= new Date()) {
+      dispatch(logout());
+      return;
+    }
 
-    const userId = localStorage.getItem("userId");
+    const userId = localStorage.getItem('userId');
     dispatch(authSuccess(userId, token));
     dispatch(authLogout((expirationDate.getTime() - new Date().getTime()) / 1000));
   };
@@ -94,13 +99,13 @@ export const checkAuthState = () => {
 
 export const clearError = () => {
   return {
-    type: actionTypes.CLEAR_ERROR
-  }
-}
+    type: actionTypes.CLEAR_ERROR,
+  };
+};
 
 export const setError = errorObj => {
   return {
     type: actionTypes.SET_ERROR,
-    errorObj
-  }
-}
+    errorObj,
+  };
+};

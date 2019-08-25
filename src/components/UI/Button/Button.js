@@ -1,16 +1,26 @@
-import React from "react";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import classes from "./Button.css";
+import classes from './Button.css';
 
-const button = props => (
+const button = ({ type, style, clicked, disabled, label }) => (
   <button
-    className={[classes.Button, classes[props.type]].join(" ")}
-    style={props.style}
-    onClick={props.clicked}
-    disabled={props.disabled}
+    className={[classes.Button, classes[type]].join(' ')}
+    style={style}
+    onClick={clicked}
+    disabled={disabled}
+    type="submit"
   >
-    {props.label}
+    {label}
   </button>
 );
+
+button.propTypes = {
+  type: PropTypes.string.isRequired,
+  style: PropTypes.shape.isRequired,
+  clicked: PropTypes.bool.isRequired,
+  disabled: PropTypes.bool.isRequired,
+  label: PropTypes.string.isRequired,
+};
 
 export default button;

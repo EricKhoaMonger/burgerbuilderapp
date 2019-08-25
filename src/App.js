@@ -1,39 +1,42 @@
-import React, { Component } from "react";
-import { Route, withRouter, Redirect, Switch } from "react-router-dom";
-import { connect } from "react-redux";
-import * as actions from "./store/actions/index";
-import { AnimatedSwitch } from 'react-router-transition'
+import React, { Component } from 'react';
+import { Route, withRouter, Redirect, Switch } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { AnimatedSwitch } from 'react-router-transition';
+import PropTypes from 'prop-types';
 
-import classes from './App.css'
-import Layout from "./hoc/Layout/Layout";
-import BurgerBuilder from "./containers/BurgerBuilder/BurgerBuilder";
-import Checkout from "./containers/Checkout/Checkout";
-import Orders from "./containers/Orders/Orders";
-import Auth from "./containers/Auth/Auth";
-import Logout from "./containers/Auth/Logout/Logout";
+import * as actions from './store/actions/index';
+import classes from './App.css';
+import Layout from './hoc/Layout/Layout';
+import BurgerBuilder from './containers/BurgerBuilder/BurgerBuilder';
+import Checkout from './containers/Checkout/Checkout';
+import Orders from './containers/Orders/Orders';
+import Auth from './containers/Auth/Auth';
+import Logout from './containers/Auth/Logout/Logout';
 
 class App extends Component {
   componentDidMount() {
-    this.props.onCheckAuthState();
+    const { onCheckAuthState } = this.props;
+    onCheckAuthState();
   }
 
-  mapStyles(styles) {
+  mapStyles = styles => {
     return {
-      opacity: styles.opacity
-    }
-  }
+      opacity: styles.opacity,
+    };
+  };
 
   render() {
+    const { isAuthenicated } = this.props;
     const fadeSwitchRoute = {
       atEnter: {
-        opacity: 0
+        opacity: 0,
       },
       atActive: {
-        opacity: 1
+        opacity: 1,
       },
       atLeave: {
-        opacity: 0
-      }
+        opacity: 0,
+      },
     };
     let routes = (
       <AnimatedSwitch
@@ -51,7 +54,7 @@ class App extends Component {
       </AnimatedSwitch>
     );
 
-    if (this.props.isAuthenicated) {
+    if (isAuthenicated) {
       routes = (
         <AnimatedSwitch
           atEnter={fadeSwitchRoute.atEnter}
@@ -75,16 +78,26 @@ class App extends Component {
   }
 }
 
+App.propTypes = {
+  isAuthenicated: PropTypes.bool.isRequired,
+  onCheckAuthState: PropTypes.func.isRequired,
+};
+
 const mapStateToProps = state => {
   return {
-    isAuthenicated: state.auth.token !== null
+    isAuthenicated: state.auth.token !== null,
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    onCheckAuthState: () => dispatch(actions.checkAuthState())
+    onCheckAuthState: () => dispatch(actions.checkAuthState()),
   };
 };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));
+export default withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(App)
+);

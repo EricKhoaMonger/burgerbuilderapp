@@ -1,38 +1,43 @@
-import React, { Component } from "react";
-import { CSSTransition } from 'react-transition-group'
+import React, { Component } from 'react';
+import { CSSTransition } from 'react-transition-group';
+import PropTypes from 'prop-types';
 
-import classes from "./Modal.css";
-import Backdrop from "../Backdrop/Backdrop";
+import classes from './Modal.css';
+import Backdrop from '../Backdrop/Backdrop';
 
 class Modal extends Component {
-  shouldComponentUpdate(nextProps, nextState) {
-    return (
-      nextProps.show !== this.props.show ||
-      nextProps.children !== this.props.children
-    );
+  shouldComponentUpdate(nextProps) {
+    const { show, children } = this.props;
+    const { show: nextShow, children: nextChildren } = nextProps;
+    return nextShow !== show || nextChildren !== children;
   }
 
   render() {
+    const { show, modalClosed, children } = this.props;
     return (
-      <React.Fragment>
-        {this.props.show && <Backdrop clicked={this.props.modalClosed} show />}
+      <>
+        {show && <Backdrop clicked={modalClosed} show />}
         <CSSTransition
-          in={this.props.show}
+          in={show}
           timeout={500}
           mountOnEnter
           unmountOnExit
           classNames={{
             enterActive: classes.ModalSlideIn,
-            exitActive:  classes.ModalSlideOut
+            exitActive: classes.ModalSlideOut,
           }}
         >
-          <div className={classes.Modal}>
-            {this.props.children}
-          </div>
+          <div className={classes.Modal}>{children}</div>
         </CSSTransition>
-      </React.Fragment>
+      </>
     );
   }
 }
+
+Modal.propTypes = {
+  show: PropTypes.bool.isRequired,
+  modalClosed: PropTypes.bool.isRequired,
+  children: PropTypes.element.isRequired,
+};
 
 export default Modal;

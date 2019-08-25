@@ -1,12 +1,14 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { Redirect } from "react-router-dom";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { Redirect } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-import * as actions from "../../../store/actions/index";
+import * as actions from '../../../store/actions/index';
 
 class Logout extends Component {
   componentDidMount() {
-    this.props.onLogout();
+    const { onLogout } = this.props;
+    onLogout();
   }
 
   render() {
@@ -14,10 +16,15 @@ class Logout extends Component {
   }
 }
 
+Logout.propTypes = { onLogout: PropTypes.func.isRequired };
+
 const mapDispatchToProps = dispatch => {
   return {
-    onLogout: () => dispatch(actions.logout())
+    onLogout: () => dispatch(actions.logout()),
   };
 };
 
-export default connect(null, mapDispatchToProps)(Logout);
+export default connect(
+  null,
+  mapDispatchToProps
+)(Logout);

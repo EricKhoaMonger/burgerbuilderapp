@@ -1,20 +1,27 @@
-import React from "react";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import classes from "./NavItems.css";
-import NavItem from "./NavItem/NavItem";
+import classes from './NavItems.css';
+import NavItem from './NavItem/NavItem';
 
-const navItems = props => (
+const navItems = ({ isAuthenicated }) => (
   <ul className={classes.NavItems}>
-    <NavItem link="/" exact>Burger Builder</NavItem>
-    {props.isAuthenicated ? (
-      <React.Fragment>
+    <NavItem link="/" exact>
+      Burger Builder
+    </NavItem>
+    {isAuthenicated ? (
+      <>
         <NavItem link="/orders">Orders</NavItem>
         <NavItem link="/logout">Logout</NavItem>
-      </React.Fragment>
+      </>
     ) : (
       <NavItem link="/auth">Authenication</NavItem>
     )}
   </ul>
 );
+
+navItems.propTypes = {
+  isAuthenicated: PropTypes.bool.isRequired,
+};
 
 export default navItems;

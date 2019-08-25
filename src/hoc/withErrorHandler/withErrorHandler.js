@@ -1,13 +1,17 @@
-import React, { Component } from "react";
+/* eslint-disable react/jsx-props-no-spreading */
+import React, { Component } from 'react';
 
-import Modal from "../../components/UI/Modal/Modal";
+import Modal from '../../components/UI/Modal/Modal';
 
 const withErrorHandler = (WrappedComponent, axios) => {
   return class extends Component {
-    state = {
-      error: null,
-      success: null
-    };
+    constructor() {
+      super();
+      this.state = {
+        error: null,
+        success: null,
+      };
+    }
 
     componentWillMount() {
       this.reqInterceptors = axios.interceptors.request.use(req => {
@@ -32,16 +36,14 @@ const withErrorHandler = (WrappedComponent, axios) => {
     };
 
     render() {
+      const { error, success } = this.state;
       return (
-        <React.Fragment>
-          <Modal
-            show={this.state.error || this.state.success}
-            modalClosed={this.errorConfirmedHandler}
-          >
-            {this.state.error ? this.state.error.message : null}
+        <>
+          <Modal show={error || success} modalClosed={this.errorConfirmedHandler}>
+            {error ? error.message : null}
           </Modal>
           <WrappedComponent {...this.props} />
-        </React.Fragment>
+        </>
       );
     }
   };

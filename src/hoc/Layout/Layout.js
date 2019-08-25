@@ -1,13 +1,17 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import Toolbar from "../../components/Navigation/Toolbar/Toolbar";
-import SideDrawer from "../../components/Navigation/SideDrawer/SideDrawer";
+import Toolbar from '../../components/Navigation/Toolbar/Toolbar';
+import SideDrawer from '../../components/Navigation/SideDrawer/SideDrawer';
 
 class Layout extends Component {
-  state = {
-    showSideDrawer: false
-  };
+  constructor() {
+    super();
+    this.state = {
+      showSideDrawer: false,
+    };
+  }
 
   showSideDrawerHandler = () => {
     this.setState({ showSideDrawer: true });
@@ -18,22 +22,26 @@ class Layout extends Component {
   };
 
   render() {
+    const { isAuthenicated, children } = this.props;
+    const { showSideDrawer } = this.state;
     return (
-      <React.Fragment>
-        <Toolbar
-          clicked={this.showSideDrawerHandler}
-          isAuth={this.props.isAuthenicated}
-        />
+      <>
+        <Toolbar clicked={this.showSideDrawerHandler} isAuth={isAuthenicated} />
         <SideDrawer
-          open={this.state.showSideDrawer}
+          open={showSideDrawer}
           clicked={this.hideSideDrawerHandler}
-          isAuth={this.props.isAuthenicated}
+          isAuth={isAuthenicated}
         />
-        <main>{this.props.children}</main>
-      </React.Fragment>
+        <main>{children}</main>
+      </>
     );
   }
 }
+
+Layout.propTypes = {
+  isAuthenicated: PropTypes.bool.isRequired,
+  children: PropTypes.element.isRequired,
+};
 
 const mapStateToProps = state => {
   return {
