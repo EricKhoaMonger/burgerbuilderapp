@@ -1,35 +1,36 @@
-import React, { Component } from "react";
-import { Route, Redirect } from "react-router-dom";
-import { connect } from "react-redux";
+import React, { Component } from 'react';
+import { Route, Redirect } from 'react-router-dom';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import CheckoutSummary from "../../components/Order/CheckoutSummary/CheckoutSummary";
-import ContactForm from "../../components/Order/ContactForm/ContactForm";
+import CheckoutSummary from '../../components/Order/CheckoutSummary/CheckoutSummary';
+import ContactForm from '../../components/Order/ContactForm/ContactForm';
 
 class Checkout extends Component {
   continueHandler = () => {
-    this.props.history.push(this.props.match.path + "/contact");
+    const { history, match } = this.props;
+    history.push(`${match.path}/contact`);
   };
 
   cancelHandler = () => {
-    this.props.history.push("/");
+    const { history } = this.props;
+    history.push('/');
   };
 
   render() {
+    const { ings, purchased, match } = this.props;
     let summary = <Redirect to="/" />;
-    if (this.props.ings) {
-      const purchaseRedirect = this.props.purchased ? <Redirect to="/" /> : null;
+    if (ings) {
+      const purchaseRedirect = purchased ? <Redirect to="/" /> : null;
       summary = (
         <div>
           {purchaseRedirect}
           <CheckoutSummary
-            ingredients={this.props.ings}
+            ingredients={ings}
             canceled={this.cancelHandler}
             continue={this.continueHandler}
           />
-          <Route
-            path={this.props.match.path + "/contact"}
-            component={ContactForm}
-          />
+          <Route path={`${match.path}/contact`} component={ContactForm} />
         </div>
       );
     }
@@ -37,10 +38,17 @@ class Checkout extends Component {
   }
 }
 
+Checkout.propTypes = {
+  history: PropTypes.shape.isRequired,
+  purchased: PropTypes.bool.isRequired,
+  match: PropTypes.shape.isRequired,
+  ings: PropTypes.shape.isRequired,
+};
+
 const mapStateToProps = state => {
   return {
     ings: state.burgerBuilder.ingredients,
-    purchased: state.order.purchased
+    purchased: state.order.purchased,
   };
 };
 

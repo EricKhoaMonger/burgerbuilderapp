@@ -1,28 +1,38 @@
-import React, { Component } from "react";
-import axios from "../../axios-orders";
-import { connect } from "react-redux";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import * as actions from "../../store/actions/index";
-import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
-import Burger from "../../components/Burger/Burger";
-import BuildControls from "../../components/Burger/BuildControls/BuildControls";
-import Modal from "../../components/UI/Modal/Modal";
-import OrderSummary from "../../components/Burger/OrderSummary/OrderSummary";
-import Spinner from "../../components/UI/Spinner/Spinner";
+import axios from '../../axios-orders';
+import * as actions from '../../store/actions/index';
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
+import Burger from '../../components/Burger/Burger';
+import BuildControls from '../../components/Burger/BuildControls/BuildControls';
+import Modal from '../../components/UI/Modal/Modal';
+import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
+import Spinner from '../../components/UI/Spinner/Spinner';
 
-export class BurgerBuilder extends Component {
-  state = {
-    purchasing: false,
-    loading: false
-  };
+class BurgerBuilder extends Component {
+  constructor() {
+    super();
+    this.state = {
+      purchasing: false,
+      loading: false,
+    };
+  }
+
+  componentDidMount() {
+    const { onInitIngredients } = this.props;
+    onInitIngredients();
+  }
 
   purchaseHandler = () => {
-    if (this.props.isAuthenticated) {
+    const { isAuthenticated, onSetAuthRedirectPath, onSetError, history } = this.props;
+    if (isAuthenticated) {
       this.setState({ purchasing: true });
     } else {
-      this.props.onSetAuthRedirectPath("/checkout");
-      this.props.onSetError({message: "SIGN_IN_NEEDED"});
-      this.props.history.push('/auth')
+      onSetAuthRedirectPath('/checkout');
+      onSetError({ message: 'SIGN_IN_NEEDED' });
+      history.push('/auth');
     }
   };
 
@@ -31,79 +41,75 @@ export class BurgerBuilder extends Component {
   };
 
   checkoutHandler = () => {
-    this.props.onPurchaseInit();
-    this.props.history.push("/checkout");
+    const { onPurchaseInit, history } = this.props;
+    onPurchaseInit();
+    history.push('/checkout');
   };
 
   mapIngredients = () => {
+    const { ings } = this.props;
     const disabledInfo = {
-      ...this.props.ings
+      ...ings,
     };
-    for (const key in disabledInfo) {
+    Object.keys(disabledInfo).forEach(key => {
       disabledInfo[key] = disabledInfo[key] <= 0;
-    }
+    });
 
     return {
       disabledInfo,
-      shouldDisableOrderBtn: disabledInfo["cheese"] === true && disabledInfo["meat"] === true
-    }
-  }
-
-  componentDidMount() {
-    this.props.onInitIngredients();
-  }
+      shouldDisableOrderBtn: disabledInfo.cheese === true && disabledInfo.meat === true,
+    };
+  };
 
   render() {
-
     let orderSummary = null;
+    const { error, ings, price, onIngredientsAdded, onIngredientsRemoved } = this.props;
+    const { loading, purchasing } = this.state;
 
     let burger =
-      this.props.error && !this.state.loading ? (
-        <p style={{ marginTop: "200px", textAlign: "center" }}>
+      error && !loading ? (
+        <p style={{ marginTop: '200px', textAlign: 'center' }}>
           <b>Internal Server Error</b>
           <br />
           Please try going back another time....
         </p>
       ) : (
-          <Spinner />
-        );
+        <Spinner />
+      );
 
-    if (this.props.ings && !this.props.error) {
+    if (ings && !error) {
       burger = (
-        <React.Fragment>
-          <Burger ingredients={this.props.ings} />
+        <>
+          <Burger ingredients={ings} />
           <BuildControls
-            ingredientAdded={this.props.onIngredientsAdded}
-            ingredientRemoved={this.props.onIngredientsRemoved}
-            totalPrice={this.props.price}
+            ingredientAdded={onIngredientsAdded}
+            ingredientRemoved={onIngredientsRemoved}
+            totalPrice={price}
             disabled={this.mapIngredients().disabledInfo}
             showOrderBtn={this.mapIngredients().shouldDisableOrderBtn}
             ordered={this.purchaseHandler}
           />
-        </React.Fragment>
+        </>
       );
       orderSummary = (
         <OrderSummary
-          ingredients={this.props.ings}
-          totalPrice={this.props.price}
+          ingredients={ings}
+          totalPrice={price}
           checkout={this.checkoutHandler}
           cancel={this.purchaseCancelHandler}
         />
       );
     }
-    if (this.state.loading) {
+    if (loading) {
       orderSummary = <Spinner />;
     }
     return (
-      <React.Fragment>
+      <>
         {burger}
-        <Modal
-          show={this.state.purchasing}
-          modalClosed={this.purchaseCancelHandler}
-        >
+        <Modal show={purchasing} modalClosed={this.purchaseCancelHandler}>
           {orderSummary}
         </Modal>
-      </React.Fragment>
+      </>
     );
   }
 }
@@ -120,12 +126,25 @@ const mapDispatchToProps = dispatch => {
   return {
     onInitIngredients: () => dispatch(actions.initIngredients()),
     onIngredientsAdded: ingName => dispatch(actions.addIngredient(ingName)),
-    onIngredientsRemoved: ingName =>
-      dispatch(actions.removeIngredient(ingName)),
+    onIngredientsRemoved: ingName => dispatch(actions.removeIngredient(ingName)),
     onPurchaseInit: () => dispatch(actions.purchaseInit()),
     onSetAuthRedirectPath: path => dispatch(actions.setAuthRedirectPath(path)),
-    onSetError: errorObj => dispatch(actions.setError(errorObj))
+    onSetError: errorObj => dispatch(actions.setError(errorObj)),
   };
+};
+
+BurgerBuilder.propTypes = {
+  onInitIngredients: PropTypes.func.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
+  onSetAuthRedirectPath: PropTypes.func.isRequired,
+  onSetError: PropTypes.func.isRequired,
+  onPurchaseInit: PropTypes.func.isRequired,
+  onIngredientsRemoved: PropTypes.func.isRequired,
+  onIngredientsAdded: PropTypes.func.isRequired,
+  history: PropTypes.shape.isRequired,
+  error: PropTypes.shape.isRequired,
+  ings: PropTypes.shape.isRequired,
+  price: PropTypes.number.isRequired,
 };
 
 export default connect(

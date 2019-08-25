@@ -1,29 +1,39 @@
-import React from "react";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import classes from "./SideDrawer.css";
-import Logo from "../../UI/Logo/Logo";
-import NavItems from "../NavItems/NavItems";
-import BackDrop from "../../UI/Backdrop/Backdrop";
+import classes from './SideDrawer.css';
+import Logo from '../../UI/Logo/Logo';
+import NavItems from '../NavItems/NavItems';
+import BackDrop from '../../UI/Backdrop/Backdrop';
 
-const sideDrawer = props => {
-  let classAdded = props.open ? classes.Open : classes.Close;
+const sideDrawer = ({ open, clicked, isAuth }) => {
+  const classAdded = open ? classes.Open : classes.Close;
 
   return (
-    <React.Fragment>
-      <BackDrop show={props.open} clicked={props.clicked} />
-      <div 
-      className={[classes.SideDrawer, classAdded].join(" ")}
-      onClick={props.clicked}
+    <>
+      <BackDrop show={open} clicked={clicked} />
+      <div
+        className={[classes.SideDrawer, classAdded].join(' ')}
+        onClick={clicked}
+        role="button"
+        tabIndex={0}
+        onKeyPress={() => {}}
       >
         <div className={classes.Logo}>
           <Logo />
         </div>
         <nav className={classes.Nav}>
-          <NavItems isAuthenicated={props.isAuth} />
+          <NavItems isAuthenicated={isAuth} />
         </nav>
       </div>
-    </React.Fragment>
+    </>
   );
+};
+
+sideDrawer.propTypes = {
+  open: PropTypes.bool.isRequired,
+  clicked: PropTypes.func.isRequired,
+  isAuth: PropTypes.bool.isRequired,
 };
 
 export default sideDrawer;

@@ -1,37 +1,43 @@
-import React from "react";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import classes from "./OrderSummary.css";
-import Button from "../../UI/Button/Button";
+import classes from './OrderSummary.css';
+import Button from '../../UI/Button/Button';
 
 const mapIngsToLis = ings => {
   return Object.keys(ings).map(igKey => {
     return (
       <li key={igKey}>
-        <span style={{ textTransform: "capitalize" }}>{igKey}</span>:{" "}
-        {ings[igKey]}
+        <span style={{ textTransform: 'capitalize' }}>{igKey}</span>: {ings[igKey]}
       </li>
     );
-  })
-}
+  });
+};
 
-const orderSummary = props => {
-  const ingredientSummary = mapIngsToLis(props.ingredients);
+const orderSummary = ({ ingredients, totalPrice, cancel, checkout }) => {
+  const ingredientSummary = mapIngsToLis(ingredients);
 
   return (
-    <React.Fragment>
+    <>
       <h3>Your Order</h3>
       <p>Ingredients Added: </p>
       <ul>{ingredientSummary}</ul>
       <p>
         <b>Total Cost: </b>
-        {props.totalPrice ? props.totalPrice.toFixed(2) : null }
+        {totalPrice ? totalPrice.toFixed(2) : null}
       </p>
       <div className={classes.BtnGroup}>
-        <Button label="Cancel" type="Danger" clicked={props.cancel} />
-        <Button label="Checkout" type="Success" clicked={props.checkout} />
+        <Button label="Cancel" type="Danger" clicked={cancel} />
+        <Button label="Checkout" type="Success" clicked={checkout} />
       </div>
-    </React.Fragment>
+    </>
   );
+};
+orderSummary.propTypes = {
+  ingredients: PropTypes.shape.isRequired,
+  totalPrice: PropTypes.number.isRequired,
+  cancel: PropTypes.func.isRequired,
+  checkout: PropTypes.func.isRequired,
 };
 
 export default orderSummary;

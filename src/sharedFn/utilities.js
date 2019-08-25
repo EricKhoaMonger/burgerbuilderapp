@@ -1,9 +1,9 @@
 export const updateObj = (oldObj, UpdatedProps) => {
   return {
     ...oldObj,
-    ...UpdatedProps
-  }
-}
+    ...UpdatedProps,
+  };
+};
 
 export const checkValidity = (input, rules) => {
   let isValid = true;
@@ -13,14 +13,12 @@ export const checkValidity = (input, rules) => {
   }
 
   if (rules.required) {
-    isValid = input.trim() !== "" && isValid;
+    isValid = input.trim() !== '' && isValid;
   }
 
   if (rules.length) {
     isValid =
-      input.length >= rules.length.minLength &&
-      input.length <= rules.length.maxLength &&
-      isValid;
+      input.length >= rules.length.minLength && input.length <= rules.length.maxLength && isValid;
   }
 
   if (rules.pattern) {
