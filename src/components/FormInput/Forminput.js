@@ -27,7 +27,7 @@ const formInput = props => {
         />
       );
       break;
-    case 'select':
+    case 'selssect':
       inputElement = (
         <select
           className={props.invalid && props.touched ? classes.Invalid : ''}
