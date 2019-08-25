@@ -8,7 +8,8 @@ const transformIngredients = ings => {
   return Object.keys(ings)
     .map(igKey => {
       return [...Array(ings[igKey])].map(() => {
-        return <BurgerIngredient key={igKey} type={igKey} />;
+        const randKey = igKey + new Date().getMilliseconds() + Math.random() * 100;
+        return <BurgerIngredient key={randKey} type={igKey} />;
       });
     })
     .reduce((arr, cur) => arr.concat(cur), []);
